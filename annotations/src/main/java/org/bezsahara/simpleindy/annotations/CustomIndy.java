@@ -8,9 +8,10 @@ import java.lang.annotation.Target;
 /**
  * Full-control {@code invokedynamic} intrinsic annotation.
  *
- * <p>The transformer replaces calls to the annotated method with an
- * {@code invokedynamic} instruction using the exact static bootstrap method
- * declared here.</p>
+ * <p>The transformer replaces {@code invokestatic} calls to the annotated
+ * method with an {@code invokedynamic} instruction using the bootstrap method
+ * handle declared here. The annotated method must be static; its body is only a
+ * source-level placeholder and is not expected to run after transformation.</p>
  *
  * <p>The bootstrap handle is always emitted as {@code H_INVOKESTATIC}.</p>
  */
@@ -36,6 +37,14 @@ public @interface CustomIndy {
     /**
      * Static bootstrap method JVM descriptor.
      *
+     * <p>The descriptor must start with the standard bootstrap parameters:
+     * {@code (MethodHandles.Lookup, String, MethodType)} and must return
+     * {@code java.lang.invoke.CallSite} or a subclass. SimpleIndy currently
+     * emits no extra static bootstrap arguments for {@code @CustomIndy}, so the
+     * descriptor should have exactly those three parameters unless the
+     * bootstrap method is a varargs collector with one trailing array
+     * parameter.</p>
+     *
      * @return the full bootstrap method descriptor
      */
     String bootstrapDescriptor();
@@ -43,9 +52,11 @@ public @interface CustomIndy {
     /**
      * Whether the bootstrap owner is an interface.
      *
-     * <p>ASM needs this value when emitting the bootstrap method handle. If this
-     * element is omitted, the transformer will try to resolve the owner class
-     * and derive it even when strict verification is disabled.</p>
+     * <p>ASM needs this value when emitting the bootstrap method handle. When
+     * this element is not explicitly present in source, the transformer tries
+     * to resolve {@link #owner()} and derive the value even when strict
+     * verification is disabled. If the value is explicitly set, derivation is
+     * skipped unless verification is enabled.</p>
      *
      * @return {@code true} when {@link #owner()} names an interface
      */

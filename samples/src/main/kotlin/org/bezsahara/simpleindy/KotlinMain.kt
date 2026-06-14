@@ -20,10 +20,10 @@ class ConstantBootstrapKotlin : SimpleBootstrap {
 }
 
 fun testInKotlin() {
-    if (constantTest() == constantTest()) {
+    if (constantKotlinTest() == constantKotlinTest()) {
         println("It works in kotlin")
     }
 }
 
 @SimpleIndy(ConstantBootstrapKotlin::class)
-fun constantTest(): Int = error("Should not happen")
+fun constantKotlinTest(): Int = error("Should not happen")

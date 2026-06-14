@@ -6,18 +6,33 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a Java method as a typed {@code invokedynamic} intrinsic stub.
+ * Marks a static JVM method as a typed {@code invokedynamic} intrinsic stub.
  *
- * <p>The transformer replaces calls to the annotated method with an
- * {@code invokedynamic} instruction.</p>
+ * <p>The transformer replaces {@code invokestatic} calls to the annotated
+ * method with {@code invokedynamic} instructions. The annotated method body is
+ * therefore only a source-level placeholder and is not expected to run after
+ * transformation.</p>
+ *
+ * <p>This annotation uses SimpleIndy's built-in bootstrap adapter,
+ * {@link org.bezsahara.simpleindy.annotations.impl.BootstrapForSimpleIndy}.
+ * The class supplied through {@link #value()} is passed to that adapter as a
+ * static bootstrap argument. The adapter then creates or obtains the
+ * {@link SimpleBootstrap} implementation instance and delegates to
+ * {@link SimpleBootstrap#bootstrap}.</p>
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.CLASS)
 public @interface SimpleIndy {
     /**
-     * Bootstrap owner class.
+     * User bootstrap implementation class.
      *
-     * @return the class that owns the bootstrap method
+     * <p>The class must implement {@link SimpleBootstrap}. At runtime
+     * {@link org.bezsahara.simpleindy.annotations.impl.BootstrapForSimpleIndy}
+     * creates the implementation through a no-argument constructor, or through
+     * the static factory method selected by {@link InitWithStatic}, then calls
+     * {@link SimpleBootstrap#bootstrap} for the linked call site.</p>
+     *
+     * @return the user bootstrap implementation class
      */
     Class<? extends SimpleBootstrap> value();
 

@@ -17,21 +17,23 @@ public class Main {
         testInKotlin();
     }
 
+    static int value = 10;
+
     static void testInJava() {
-        if (constantTes3() == constantTes3()) {
+        if (constantJavaTest() == constantJavaTest()) {
             System.out.println("It works in java");
         }
     }
 
-    static class ConstantBootstrap3 implements SimpleBootstrap {
+    static class ConstantBootstrap implements SimpleBootstrap {
         @Override
         public CallSite bootstrap(MethodHandles.Lookup lookup, String name, MethodType type, Object[] args) {
-            return new ConstantCallSite(MethodHandles.constant(Integer.TYPE, 10));
+            return new ConstantCallSite(MethodHandles.constant(Integer.TYPE, value));
         }
     }
 
-    @SimpleIndy(ConstantBootstrap3.class)
-    public static int constantTes3() {
+    @SimpleIndy(ConstantBootstrap.class)
+    public static int constantJavaTest() {
         throw new AssertionError("Implemented via transform");
     }
 }

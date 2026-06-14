@@ -2,13 +2,21 @@ package org.bezsahara.simpleindy.annotations.impl;
 
 import org.bezsahara.simpleindy.annotations.InitWithStatic;
 import org.bezsahara.simpleindy.annotations.SimpleBootstrap;
+import org.bezsahara.simpleindy.annotations.SimpleIndy;
 
 import java.lang.invoke.CallSite;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.Objects;
 
+/**
+ * Built-in JVM bootstrap adapter used by {@link SimpleIndy}.
+ *
+ * <p>The transformer emits this class's {@link #bootstrap} method as the real
+ * {@code invokedynamic} bootstrap method.
+ */
 public final class BootstrapForSimpleIndy {
+
     public static CallSite bootstrap(
             MethodHandles.Lookup lookup,
             String name,
@@ -19,7 +27,6 @@ public final class BootstrapForSimpleIndy {
         var instance = createInstanceSB(userClass);
         return instance.bootstrap(lookup, name, type, spreader);
     }
-
 
     static SimpleBootstrap createInstanceSB(Class<? extends SimpleBootstrap> userClass) throws Throwable {
         Objects.requireNonNull(userClass);
@@ -32,7 +39,6 @@ public final class BootstrapForSimpleIndy {
             } catch (Throwable ignored) {
             }
         }
-        // let's try constructor
         var ctor = userClass.getDeclaredConstructor();
         ctor.setAccessible(true);
         return (SimpleBootstrap) ctor.newInstance();
