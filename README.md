@@ -11,7 +11,7 @@ Apply the plugin and add the annotations dependency:
 ```kotlin
 plugins {
     id("java")
-    id("org.bezsahara.simpleindy") version "1.0-SNAPSHOT"
+    id("org.bezsahara.simpleindy") version "0.1.1"
 }
 
 repositories {
@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.bezsahara:annotations:1.0-SNAPSHOT")
+    implementation("org.bezsahara:annotations:0.1.1")
 }
 ```
 
