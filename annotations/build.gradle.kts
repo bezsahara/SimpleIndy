@@ -87,36 +87,32 @@ publishing {
 
 fun env(name: String): String? = System.getenv(name)?.takeIf { it.isNotBlank() }
 
-val centralPublishingTaskNames = setOf(
-    "publishMavenJavaPublicationToCentralStagingRepository",
-    "generateAnnotationsCentralChecksums",
-    "createAnnotationsCentralBundle",
-    "uploadAnnotationsToMavenCentral",
-)
-
-var centralPublishingRequested = false
-gradle.taskGraph.whenReady {
-    centralPublishingRequested = allTasks.any { task ->
-        task.project == project && task.name in centralPublishingTaskNames
-    }
+fun findSigningFile(name: String): File? {
+    val skPath = env("SK_P") ?: return null
+    return file("$skPath\\bez\\$name").takeIf { it.isFile }
 }
 
-signing {
-    setRequired {
-        centralPublishingRequested
-    }
-
-    val signingKey = providers.gradleProperty("signingKey").orNull
+fun signingKeyText(): String? {
+    return providers.gradleProperty("signingKey").orNull
         ?: env("SIGNING_KEY")
-    val signingPassword = providers.gradleProperty("signingPassword").orNull
+        ?: findSigningFile("d1_SECRET.asc")?.readText()
+}
+
+fun signingPasswordText(): String? {
+    return providers.gradleProperty("signingPassword").orNull
         ?: env("SIGNING_PASSWORD")
         ?: env("PASS_PHRASE")
+        ?: findSigningFile("pass_phrase.txt")?.readText()?.trim()
+}
 
-    if (!signingKey.isNullOrBlank()) {
-        useInMemoryPgpKeys(signingKey, signingPassword.orEmpty())
+val configuredSigningKey = signingKeyText()
+val configuredSigningPassword = signingPasswordText()
+
+if (!configuredSigningKey.isNullOrBlank()) {
+    signing {
+        useInMemoryPgpKeys(configuredSigningKey, configuredSigningPassword.orEmpty())
+        sign(publishing.publications)
     }
-
-    sign(publishing.publications)
 }
 
 tasks.withType<GenerateModuleMetadata>().configureEach {
